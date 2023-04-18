@@ -57,7 +57,7 @@ func NewEVMRegistryServiceV2_0(addr common.Address, client evm.Chain, mc *models
 		return nil, fmt.Errorf("%w: failed to create caller for address and backend", ErrInitializationFailure)
 	}
 
-	r := &EvmRegistry{
+	return &EvmRegistry{
 		HeadProvider: HeadProvider{
 			ht:     client.HeadTracker(),
 			hb:     client.HeadBroadcaster(),
@@ -74,13 +74,7 @@ func NewEVMRegistryServiceV2_0(addr common.Address, client evm.Chain, mc *models
 		packer:   &evmRegistryPackerV2_0{abi: abi},
 		headFunc: func(types.BlockKey) {},
 		chLog:    make(chan logpoller.Log, 1000),
-	}
-
-	if err := r.registerEvents(client.ID().Uint64(), addr); err != nil {
-		return nil, fmt.Errorf("logPoller error while registering automation events: %w", err)
-	}
-
-	return r, nil
+	}, nil
 }
 
 var upkeepStateEvents = []common.Hash{
@@ -359,23 +353,12 @@ func (r *EvmRegistry) pollLogs() error {
 	return nil
 }
 
-func UpkeepFilterName(addr common.Address) string {
-	return logpoller.FilterName("EvmRegistry - Upkeep events for", addr.String())
-}
-
-func (r *EvmRegistry) registerEvents(chainID uint64, addr common.Address) error {
-	// Add log filters for the log poller so that it can poll and find the logs that
-	// we need
-	err := r.poller.RegisterFilter(logpoller.Filter{
-		Name:      UpkeepFilterName(addr),
+func UpkeepFilter(addr common.Address) (filters logpoller.Filter) {
+	return logpoller.Filter{
+		Name:      logpoller.FilterName("EvmRegistry - Upkeep events for", addr.String()),
 		EventSigs: append(upkeepStateEvents, upkeepActiveEvents...),
 		Addresses: []common.Address{addr},
-	})
-	if err != nil {
-		r.mu.Lock()
-		r.mu.Unlock()
 	}
-	return err
 }
 
 func (r *EvmRegistry) processUpkeepStateLog(l logpoller.Log) error {
