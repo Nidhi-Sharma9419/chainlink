@@ -18,7 +18,7 @@ import (
 	"github.com/smartcontractkit/chainlink/v2/core/services/job"
 	"github.com/smartcontractkit/chainlink/v2/core/services/keystore/chaintype"
 	"github.com/smartcontractkit/chainlink/v2/core/store/models"
-	"github.com/smartcontractkit/libocr/offchainreporting2/confighelper"
+	"github.com/smartcontractkit/libocr/offchainreporting2plus/confighelper"
 	types2 "github.com/smartcontractkit/ocr2keepers/pkg/types"
 
 	"github.com/smartcontractkit/chainlink/integration-tests/client"

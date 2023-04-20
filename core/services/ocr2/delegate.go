@@ -10,8 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
-	libocr2 "github.com/smartcontractkit/libocr/offchainreporting2"
-	ocr2types "github.com/smartcontractkit/libocr/offchainreporting2/types"
+
+	libocr2 "github.com/smartcontractkit/libocr/offchainreporting2plus"
+	ocr2types "github.com/smartcontractkit/libocr/offchainreporting2plus/types"
 	ocr2keepers "github.com/smartcontractkit/ocr2keepers/pkg"
 	"github.com/smartcontractkit/ocr2vrf/altbn_128"
 	dkgpkg "github.com/smartcontractkit/ocr2vrf/dkg"
@@ -341,7 +342,7 @@ func (d *Delegate) ServicesForSpec(jb job.Job) ([]job.ServiceCtx, error) {
 			return nil, errors.Wrap(err2, "ServicesForSpec failed to get chain")
 		}
 
-		oracleArgsNoPlugin := libocr2.OracleArgs{
+		oracleArgsNoPlugin := libocr2.MercuryOracleArgs{
 			BinaryNetworkEndpointFactory: peerWrapper.Peer2,
 			V2Bootstrappers:              bootstrapPeers,
 			ContractTransmitter:          mercuryProvider.ContractTransmitter(),
@@ -370,7 +371,7 @@ func (d *Delegate) ServicesForSpec(jb job.Job) ([]job.ServiceCtx, error) {
 		return mercuryServices, err2
 
 	case job.Median:
-		oracleArgsNoPlugin := libocr2.OracleArgs{
+		oracleArgsNoPlugin := libocr2.OCR2OracleArgs{
 			BinaryNetworkEndpointFactory: peerWrapper.Peer2,
 			V2Bootstrappers:              bootstrapPeers,
 			Database:                     ocrDB,
@@ -417,7 +418,7 @@ func (d *Delegate) ServicesForSpec(jb job.Job) ([]job.ServiceCtx, error) {
 			return nil, err2
 		}
 		noopMonitoringEndpoint := telemetry.NoopAgent{}
-		oracleArgsNoPlugin := libocr2.OracleArgs{
+		oracleArgsNoPlugin := libocr2.OCR2OracleArgs{
 			BinaryNetworkEndpointFactory: peerWrapper.Peer2,
 			V2Bootstrappers:              bootstrapPeers,
 			ContractTransmitter:          dkgProvider.ContractTransmitter(),
@@ -715,7 +716,7 @@ func (d *Delegate) ServicesForSpec(jb job.Job) ([]job.ServiceCtx, error) {
 			return nil, err2
 		}
 
-		sharedOracleArgs := libocr2.OracleArgs{
+		sharedOracleArgs := libocr2.OCR2OracleArgs{
 			BinaryNetworkEndpointFactory: peerWrapper.Peer2,
 			V2Bootstrappers:              bootstrapPeers,
 			ContractTransmitter:          functionsProvider.ContractTransmitter(),

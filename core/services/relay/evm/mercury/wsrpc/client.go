@@ -117,27 +117,3 @@ func (w *client) Transmit(ctx context.Context, req *pb.TransmitRequest) (resp *p
 	}
 	return
 }
-
-func (w *client) LatestReport(ctx context.Context, req *pb.LatestReportRequest) (resp *pb.LatestReportResponse, err error) {
-	lggr := w.logger.With("req.FeedId", hexutil.Encode(req.FeedId))
-	lggr.Debug("LatestReport")
-	ok := w.IfStarted(func() {
-		if ready := w.conn.WaitForReady(ctx); !ready {
-			err = errors.Errorf("websocket client not ready; got state: %v", w.conn.GetState())
-			return
-		}
-
-		resp, err = w.client.LatestReport(ctx, req)
-	})
-	if !ok {
-		return nil, errors.Errorf("client is not started; state=%v", w.StartStopOnce.State())
-	}
-	if err != nil {
-		lggr.Errorw("LatestReport failed", "err", err, "req", req, "resp", resp)
-	} else if resp.Error != "" {
-		lggr.Errorw("LatestReport failed; mercury server returned error", "err", resp.Error, "req", req, "resp", resp)
-	} else {
-		lggr.Debugw("LatestReport succeeded", "resp", resp)
-	}
-	return
-}

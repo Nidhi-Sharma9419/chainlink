@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/pkg/errors"
-	ocrtypes "github.com/smartcontractkit/libocr/offchainreporting2/types"
+	ocrtypes "github.com/smartcontractkit/libocr/offchainreporting2plus/types"
 
 	relaymercury "github.com/smartcontractkit/chainlink-relay/pkg/reportingplugins/mercury"
 
@@ -52,7 +52,7 @@ func NewEVMReportCodec(feedID [32]byte, lggr logger.Logger) *EVMReportCodec {
 	return &EVMReportCodec{lggr, feedID}
 }
 
-func (r *EVMReportCodec) BuildReport(paos []relaymercury.ParsedAttributedObservation, f int) (ocrtypes.Report, error) {
+func (r *EVMReportCodec) BuildReport(paos []relaymercury.ParsedAttributedObservation, f int, validFromBlockNum int64) (ocrtypes.Report, error) {
 	if len(paos) == 0 {
 		return nil, errors.Errorf("cannot build report from empty attributed observations")
 	}
@@ -68,11 +68,6 @@ func (r *EVMReportCodec) BuildReport(paos []relaymercury.ParsedAttributedObserva
 	currentBlockHash, currentBlockNum, currentBlockTimestamp, err := relaymercury.GetConsensusCurrentBlock(paos, f)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetConsensusCurrentBlock failed")
-	}
-
-	validFromBlockNum, err := relaymercury.GetConsensusValidFromBlock(paos, f)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetConsensusValidFromBlock failed")
 	}
 
 	if validFromBlockNum > currentBlockNum {

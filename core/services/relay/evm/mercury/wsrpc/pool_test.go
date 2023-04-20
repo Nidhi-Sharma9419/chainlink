@@ -26,9 +26,6 @@ type mockClient struct {
 func (c *mockClient) Transmit(ctx context.Context, in *pb.TransmitRequest) (out *pb.TransmitResponse, err error) {
 	return
 }
-func (c *mockClient) LatestReport(ctx context.Context, in *pb.LatestReportRequest) (out *pb.LatestReportResponse, err error) {
-	return
-}
 func (c *mockClient) Start(context.Context) error {
 	c.started = true
 	return nil

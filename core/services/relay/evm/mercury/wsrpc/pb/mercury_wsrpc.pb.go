@@ -7,14 +7,13 @@ package pb
 
 import (
 	context "context"
-
 	wsrpc "github.com/smartcontractkit/wsrpc"
 )
 
 // MercuryClient is the client API for Mercury service.
+//
 type MercuryClient interface {
 	Transmit(ctx context.Context, in *TransmitRequest) (*TransmitResponse, error)
-	LatestReport(ctx context.Context, in *LatestReportRequest) (*LatestReportResponse, error)
 }
 
 type mercuryClient struct {
@@ -34,19 +33,9 @@ func (c *mercuryClient) Transmit(ctx context.Context, in *TransmitRequest) (*Tra
 	return out, nil
 }
 
-func (c *mercuryClient) LatestReport(ctx context.Context, in *LatestReportRequest) (*LatestReportResponse, error) {
-	out := new(LatestReportResponse)
-	err := c.cc.Invoke(ctx, "LatestReport", in, out)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MercuryServer is the server API for Mercury service.
 type MercuryServer interface {
 	Transmit(context.Context, *TransmitRequest) (*TransmitResponse, error)
-	LatestReport(context.Context, *LatestReportRequest) (*LatestReportResponse, error)
 }
 
 func RegisterMercuryServer(s wsrpc.ServiceRegistrar, srv MercuryServer) {
@@ -61,14 +50,6 @@ func _Mercury_Transmit_Handler(srv interface{}, ctx context.Context, dec func(in
 	return srv.(MercuryServer).Transmit(ctx, in)
 }
 
-func _Mercury_LatestReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(LatestReportRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	return srv.(MercuryServer).LatestReport(ctx, in)
-}
-
 // Mercury_ServiceDesc is the wsrpc.ServiceDesc for Mercury service.
 // It's only intended for direct use with wsrpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -79,10 +60,6 @@ var Mercury_ServiceDesc = wsrpc.ServiceDesc{
 		{
 			MethodName: "Transmit",
 			Handler:    _Mercury_Transmit_Handler,
-		},
-		{
-			MethodName: "LatestReport",
-			Handler:    _Mercury_LatestReport_Handler,
 		},
 	},
 }

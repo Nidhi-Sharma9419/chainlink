@@ -1,15 +1,14 @@
 package mercury
 
 import (
-	"bytes"
 	"context"
 	"crypto/ed25519"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/pkg/errors"
-	"github.com/smartcontractkit/libocr/offchainreporting2/chains/evmutil"
-	ocrtypes "github.com/smartcontractkit/libocr/offchainreporting2/types"
+	"github.com/smartcontractkit/libocr/offchainreporting2plus/chains/evmutil"
+	ocrtypes "github.com/smartcontractkit/libocr/offchainreporting2plus/types"
 
 	relaymercury "github.com/smartcontractkit/chainlink-relay/pkg/reportingplugins/mercury"
 
@@ -123,67 +122,5 @@ func (mt *mercuryTransmitter) FromAccount() ocrtypes.Account {
 
 // LatestConfigDigestAndEpoch retrieves the latest config digest and epoch from the OCR2 contract.
 func (mt *mercuryTransmitter) LatestConfigDigestAndEpoch(ctx context.Context) (cd ocrtypes.ConfigDigest, epoch uint32, err error) {
-	mt.lggr.Debug("LatestConfigDigestAndEpoch")
-	req := &pb.LatestReportRequest{
-		FeedId: mt.feedID[:],
-	}
-	resp, err := mt.rpcClient.LatestReport(ctx, req)
-	if err != nil {
-		mt.lggr.Errorw("LatestConfigDigestAndEpoch failed", "err", err)
-		return cd, epoch, errors.Wrap(err, "LatestConfigDigestAndEpoch failed to fetch LatestReport")
-	}
-	if resp == nil {
-		return cd, epoch, errors.New("LatestConfigDigestAndEpoch expected LatestReport to return non-nil response")
-	}
-	if resp.Error != "" {
-		err = errors.New(resp.Error)
-		mt.lggr.Errorw("LatestConfigDigestAndEpoch failed; mercury server returned error", "err", err)
-		return cd, epoch, err
-	}
-	if resp.Report == nil {
-		_, cd, err = mt.cfgTracker.LatestConfigDetails(ctx)
-		mt.lggr.Info("LatestConfigDigestAndEpoch returned empty LatestReport, this is a brand new feed")
-		return cd, epoch, errors.Wrap(err, "fallback to LatestConfigDetails on empty LatestReport failed")
-	}
-	cd, err = ocrtypes.BytesToConfigDigest(resp.Report.ConfigDigest)
-	if err != nil {
-		return cd, epoch, errors.Wrapf(err, "LatestConfigDigestAndEpoch failed; response contained invalid config digest, got: 0x%x", resp.Report.ConfigDigest)
-	}
-	if !bytes.Equal(resp.Report.FeedId, mt.feedID[:]) {
-		return cd, epoch, errors.Errorf("LatestConfigDigestAndEpoch failed; mismatched feed IDs, expected: 0x%x, got: 0x%x", mt.feedID, resp.Report.FeedId)
-	}
-
-	mt.lggr.Debugw("LatestConfigDigestAndEpoch success", "cd", cd, "epoch", epoch)
-
-	return cd, resp.Report.Epoch, nil
-}
-
-func (mt *mercuryTransmitter) FetchInitialMaxFinalizedBlockNumber(ctx context.Context) (int64, error) {
-	mt.lggr.Debug("FetchInitialMaxFinalizedBlockNumber")
-	req := &pb.LatestReportRequest{
-		FeedId: mt.feedID[:],
-	}
-	resp, err := mt.rpcClient.LatestReport(ctx, req)
-	if err != nil {
-		mt.lggr.Errorw("FetchInitialMaxFinalizedBlockNumber failed", "err", err)
-		return 0, errors.Wrap(err, "FetchInitialMaxFinalizedBlockNumber failed to fetch LatestReport")
-	}
-	if resp == nil {
-		return 0, errors.New("FetchInitialMaxFinalizedBlockNumber expected LatestReport to return non-nil response")
-	}
-	if resp.Error != "" {
-		err = errors.New(resp.Error)
-		mt.lggr.Errorw("FetchInitialMaxFinalizedBlockNumber failed; mercury server returned error", "err", err)
-		return 0, err
-	}
-	if resp.Report == nil {
-		mt.lggr.Infow("FetchInitialMaxFinalizedBlockNumber returned empty LatestReport; this is a new feed so initial block number is 0", "currentBlockNum", 0)
-		return 0, nil
-	} else if !bytes.Equal(resp.Report.FeedId, mt.feedID[:]) {
-		return 0, errors.Errorf("FetchInitialMaxFinalizedBlockNumber failed; mismatched feed IDs, expected: 0x%x, got: 0x%x", mt.feedID, resp.Report.FeedId)
-	}
-
-	mt.lggr.Debugw("FetchInitialMaxFinalizedBlockNumber success", "currentBlockNum", resp.Report.CurrentBlockNumber)
-
-	return resp.Report.CurrentBlockNumber, nil
+	panic("not needed for OCR3")
 }
