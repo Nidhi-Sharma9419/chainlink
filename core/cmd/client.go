@@ -266,12 +266,11 @@ func (n ChainlinkAppFactory) NewApplication(ctx context.Context, cfg chainlink.G
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to marshal Solana configs")
 			}
-			chainPluginService := loop.NewRelayerService(solLggr, func() *exec.Cmd {
+			chains.Solana = loop.NewRelayerService(solLggr, func() *exec.Cmd {
 				cmd := exec.Command(cmdName)
 				plugins.SetEnvConfig(cmd, cfg)
 				return cmd
 			}, string(tomls), &keystore.SolanaSigner{keyStore.Solana()})
-			chains.Solana = chainPluginService
 		} else {
 			opts := solana.ChainSetOpts{
 				Logger:   solLggr,
@@ -282,7 +281,7 @@ func (n ChainlinkAppFactory) NewApplication(ctx context.Context, cfg chainlink.G
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to load Solana chainset")
 			}
-			chains.Solana = relay.NewLocalRelayerService(pkgsolana.NewRelayer(solLggr, chainSet), chainSet)
+			chains.Solana = relay.NewRelayerAdapter(pkgsolana.NewRelayer(solLggr, chainSet), chainSet)
 		}
 	}
 

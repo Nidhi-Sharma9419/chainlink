@@ -23,11 +23,15 @@ func main() {
 	stop := make(chan struct{})
 	defer close(stop)
 
-	mp := median.NewPlugin(lggr, stop)
+	mp := median.NewPlugin(lggr)
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: loop.PluginMedianHandshakeConfig(),
 		Plugins: map[string]plugin.Plugin{
-			loop.PluginMedianName: loop.NewGRPCPluginMedian(mp, lggr),
+			loop.PluginMedianName: &loop.GRPCPluginMedian{
+				StopCh:       stop,
+				Logger:       lggr,
+				PluginServer: mp,
+			},
 		},
 		GRPCServer: plugin.DefaultGRPCServer,
 	})

@@ -30,28 +30,35 @@ func main() {
 	lggr, closeLggr := plugins.NewLogger(envCfg)
 	defer closeLggr()
 
-	cp := &chainPlugin{lggr: lggr}
+	cp := &pluginRelayer{lggr: lggr}
 	defer func() {
-		logger.Sugared(lggr).ErrorIfFn(cp.Close, "chainPlugin")
+		logger.Sugared(lggr).ErrorIfFn(cp.Close, "pluginRelayer")
 	}()
+
+	stopCh := make(chan struct{})
+	defer close(stopCh)
 
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: loop.PluginRelayerHandshakeConfig(),
 		Plugins: map[string]plugin.Plugin{
-			loop.PluginRelayerName: loop.NewGRPCPluginRelayer(cp, lggr),
+			loop.PluginRelayerName: &loop.GRPCPluginRelayer{
+				StopCh:       stopCh,
+				Logger:       lggr,
+				PluginServer: cp,
+			},
 		},
 		GRPCServer: plugin.DefaultGRPCServer,
 	})
 }
 
-type chainPlugin struct {
+type pluginRelayer struct {
 	lggr logger.Logger
 
 	mu      sync.Mutex
 	closers []io.Closer
 }
 
-func (c *chainPlugin) NewRelayer(ctx context.Context, config string, keystore loop.Keystore) (loop.Relayer, error) {
+func (c *pluginRelayer) NewRelayer(ctx context.Context, config string, keystore loop.Keystore) (loop.Relayer, error) {
 	d := toml.NewDecoder(strings.NewReader(config))
 	d.DisallowUnknownFields()
 	var cfg struct {
@@ -73,10 +80,10 @@ func (c *chainPlugin) NewRelayer(ctx context.Context, config string, keystore lo
 	c.mu.Lock()
 	c.closers = append(c.closers, chainSet, r)
 	c.mu.Unlock()
-	return &relay.RelayerAdapter{Relayer: r, RelayerExt: chainSet}, nil
+	return relay.NewRelayerAdapter(r, chainSet), nil
 }
 
-func (c *chainPlugin) Close() (err error) {
+func (c *pluginRelayer) Close() (err error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	for _, cl := range c.closers {
