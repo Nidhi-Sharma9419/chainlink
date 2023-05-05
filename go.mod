@@ -353,6 +353,8 @@ replace (
 	// See https://github.com/ugorji/go/issues/279
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.1
 
+	github.com/dontpanicdao/caigo => github.com/smartcontractkit/caigo v0.0.0-20230505061009-1ab14f83e97d
+
 	// replicating the replace directive on cosmos SDK
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 )
