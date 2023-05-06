@@ -38,11 +38,15 @@ func setupORM(t *testing.T) *TestORM {
 // Tests the atomicity of cleanup function passed to DeleteForwarder, during DELETE operation
 func Test_DeleteForwarder(t *testing.T) {
 	t.Parallel()
-	orm := setupORM(t)
+
+	db := pgtest.NewSqlxDBWithRollback(t)
+	lggr := logger.TestLogger(t)
+	tORM := NewORM(db, lggr, pgtest.NewQConfig(true))
+
 	addr := testutils.NewAddress()
 	chainID := testutils.FixtureChainID
 
-	fwd, err := orm.CreateForwarder(addr, *utils.NewBig(chainID))
+	fwd, err := tORM.CreateForwarder(addr, *utils.NewBig(chainID))
 	require.NoError(t, err)
 	assert.Equal(t, addr, fwd.Address)
 
@@ -63,7 +67,7 @@ func Test_DeleteForwarder(t *testing.T) {
 	}
 
 	for _, expect := range expected {
-		err = orm.DeleteForwarder(fwd.ID, testCleanupFn)
+		err = tORM.DeleteForwarder(fwd.ID, testCleanupFn)
 		assert.ErrorIs(t, err, expect)
 	}
 	assert.Equal(t, 2, cleanupCalled)
