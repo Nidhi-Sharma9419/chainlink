@@ -44,7 +44,8 @@ func Test_DeleteForwarder(t *testing.T) {
 	tORM := NewORM(db, lggr, pgtest.NewQConfig(true))
 
 	addr := testutils.NewAddress()
-	chainID := testutils.FixtureChainID
+	chainID := testutils.NewRandomEVMChainID()
+	_, err := db.Exec(`INSERT INTO evm_chains (id, created_at, updated_at) VALUES ($1, NOW(), NOW())`, utils.NewBig(chainID))
 
 	fwd, err := tORM.CreateForwarder(addr, *utils.NewBig(chainID))
 	require.NoError(t, err)

@@ -675,17 +675,17 @@ func TestFilterNamesFromSpec(t *testing.T) {
 		ContractID: address.String(), // valid contract addr
 	}
 
-	names, err := ocr2keeper.FilterNamesFromSpec(spec)
+	filters, err := ocr2keeper.FiltersFromSpec(spec)
 	require.NoError(t, err)
 
-	assert.Len(t, names, 2)
-	assert.Equal(t, logpoller.FilterName("OCR2KeeperRegistry - LogProvider", address), names[0])
-	assert.Equal(t, logpoller.FilterName("EvmRegistry - Upkeep events for", address), names[1])
+	assert.Len(t, filters, 2)
+	assert.Equal(t, logpoller.FilterName("OCR2KeeperRegistry - LogProvider", address), filters[0].Name)
+	assert.Equal(t, logpoller.FilterName("EvmRegistry - Upkeep events for", address), filters[1].Name)
 
 	spec = &job.OCR2OracleSpec{
 		PluginType: job.OCR2Keeper,
 		ContractID: "0x5431", // invalid contract addr
 	}
-	names, err = ocr2keeper.FilterNamesFromSpec(spec)
+	filters, err = ocr2keeper.FiltersFromSpec(spec)
 	require.ErrorContains(t, err, "not a valid EIP55 formatted address")
 }
