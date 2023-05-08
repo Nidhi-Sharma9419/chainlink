@@ -171,14 +171,14 @@ func (d *Delegate) OnCreateJob(jb job.Job, q pg.Queryer) error {
 	lp := chain.LogPoller()
 	if jb.BlockhashStoreSpec.CoordinatorV1Address == nil {
 		filter := NewV1LogFilter(jb.BlockhashStoreSpec.CoordinatorV1Address.Address())
-		lp.RegisterFilter(filter, q)
+		err = lp.RegisterFilter(filter, q)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to register filter %v", filter)
 		}
 	}
 	if jb.BlockhashStoreSpec.CoordinatorV2Address == nil {
 		filter := NewV2LogFilter(jb.BlockhashStoreSpec.CoordinatorV2Address.Address())
-		lp.RegisterFilter(filter, q)
+		err = lp.RegisterFilter(filter, q)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to register filter %v", filter)
 		}
