@@ -1126,7 +1126,7 @@ func FiltersFromSpec(spec *job.OCR2OracleSpec) (filters []logpoller.Filter, err 
 		err = errors.Join(err, err2)
 	}
 	dkg, err2 := ethkey.NewEIP55Address(cfg.DKGContractAddress)
-	if err == nil {
+	if err2 == nil {
 		err = errors.Join(err, err2)
 	}
 	return []logpoller.Filter{createLogFilter(beacon.Address(), coord.Address(), dkg.Address())}, nil
