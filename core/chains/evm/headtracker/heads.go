@@ -17,7 +17,7 @@ type Heads interface {
 	HeadByHash(hash common.Hash) *evmtypes.Head
 	// AddHeads adds newHeads to the collection, eliminates duplicates,
 	// sorts by head number, fixes parents and cuts off old heads (historyDepth).
-	AddHeads(historyDepth uint, newHeads ...*evmtypes.Head)
+	AddHeads(latestFinalized int64, newHeads ...*evmtypes.Head)
 	// Count returns number of heads in the collection.
 	Count() int
 }
@@ -60,7 +60,7 @@ func (h *heads) Count() int {
 	return len(h.heads)
 }
 
-func (h *heads) AddHeads(historyDepth uint, newHeads ...*evmtypes.Head) {
+func (h *heads) AddHeads(latestFinalized int64, newHeads ...*evmtypes.Head) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -74,8 +74,13 @@ func (h *heads) AddHeads(historyDepth uint, newHeads ...*evmtypes.Head) {
 		// elsewhere (since we mutate Parent here)
 		headCopy := *head
 		headCopy.Parent = nil // always build it from scratch in case it points to a head too old to be included
-		// map eliminates duplicates
-		headsMap[head.Hash] = &headCopy
+		// Map eliminates duplicates. Include every unfinalized block up until the latest finalized if it exists.
+		if headCopy.Number >= latestFinalized {
+			if headCopy.Number == latestFinalized {
+				headCopy.Finalized = true
+			}
+			headsMap[head.Hash] = &headCopy
+		}
 	}
 
 	heads := make([]*evmtypes.Head, len(headsMap))
@@ -93,11 +98,6 @@ func (h *heads) AddHeads(historyDepth uint, newHeads ...*evmtypes.Head) {
 		// sorting from the highest number to lowest
 		return heads[i].Number > heads[j].Number
 	})
-
-	// cut off the oldest
-	if uint(len(heads)) > historyDepth {
-		heads = heads[:historyDepth]
-	}
 
 	// assign parents
 	for i := 0; i < len(heads)-1; i++ {

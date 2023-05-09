@@ -40,6 +40,7 @@ type Head struct {
 	StateRoot        common.Hash
 	Difficulty       *utils.Big
 	TotalDifficulty  *utils.Big
+	Finalized        bool
 }
 
 var _ txmgrtypes.Head = &Head{}
@@ -76,6 +77,19 @@ func (h *Head) EarliestInChain() *Head {
 		h = h.Parent
 	}
 	return h
+}
+
+func (h *Head) LatestFinalizedBlockNumber() int64 {
+	if h.Finalized {
+		return h.Number
+	}
+	for h.Parent != nil {
+		h = h.Parent
+	}
+	if h.Finalized {
+		return h.Number
+	}
+	return 0
 }
 
 // EarliestHeadInChain recurses through parents until it finds the earliest one

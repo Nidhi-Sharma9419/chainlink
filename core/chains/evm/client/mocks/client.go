@@ -445,6 +445,30 @@ func (_m *Client) HeaderByNumber(ctx context.Context, n *big.Int) (*types.Header
 	return r0, r1
 }
 
+// HeightByBlockType provides a mock function with given fields: ctx, finalityType
+func (_m *Client) HeightByBlockType(ctx context.Context, finalityType string) (int64, error) {
+	ret := _m.Called(ctx, finalityType)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, finalityType)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, finalityType)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, finalityType)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // LINKBalance provides a mock function with given fields: ctx, address, linkAddress
 func (_m *Client) LINKBalance(ctx context.Context, address common.Address, linkAddress common.Address) (*assets.Link, error) {
 	ret := _m.Called(ctx, address, linkAddress)

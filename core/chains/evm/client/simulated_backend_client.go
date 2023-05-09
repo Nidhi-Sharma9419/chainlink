@@ -277,6 +277,10 @@ func (c *SimulatedBackendClient) LatestBlockHeight(ctx context.Context) (*big.In
 	panic("not implemented")
 }
 
+func (c *SimulatedBackendClient) HeightByBlockType(ctx context.Context, finalityType string) (int64, error) {
+	panic("not implemented")
+}
+
 // ChainID returns the ethereum ChainID.
 func (c *SimulatedBackendClient) ConfiguredChainID() *big.Int {
 	return c.chainId

@@ -23,6 +23,9 @@ type HeadSaver interface {
 	LatestChain() *evmtypes.Head
 	// Chain returns a head for the specified hash, or nil.
 	Chain(hash common.Hash) *evmtypes.Head
+	// Given a head, get the latest finalized block number. If finality tag is not enabled, calculate based on the highest block number between a given
+	// head and the current latest head from stored heads.
+	LatestFinalizedBlockNumber(ctx context.Context, currentHeadNumber int64) (int64, error)
 }
 
 // HeadTracker holds and stores the latest block number experienced by this particular node in a thread safe manner.
@@ -31,9 +34,9 @@ type HeadSaver interface {
 //go:generate mockery --quiet --name HeadTracker --output ../mocks/ --case=underscore
 type HeadTracker interface {
 	services.ServiceCtx
-	// Backfill given a head will fill in any missing heads up to the given depth
+	// Backfill given a head will fill in any missing heads up to the given latestFinalized
 	// (used for testing)
-	Backfill(ctx context.Context, headWithChain *evmtypes.Head, depth uint) (err error)
+	Backfill(ctx context.Context, headWithChain *evmtypes.Head, latestFinalized uint) (err error)
 	LatestChain() *evmtypes.Head
 }
 

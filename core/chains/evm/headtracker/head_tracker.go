@@ -148,17 +148,12 @@ func (ht *headTracker) HealthReport() map[string]error {
 	return report
 }
 
-func (ht *headTracker) Backfill(ctx context.Context, headWithChain *evmtypes.Head, depth uint) (err error) {
-	if uint(headWithChain.ChainLength()) >= depth {
+func (ht *headTracker) Backfill(ctx context.Context, headWithChain *evmtypes.Head, latestFinalized uint) (err error) {
+	if uint(headWithChain.ChainLength()) >= latestFinalized {
 		return nil
 	}
 
-	baseHeight := headWithChain.Number - int64(depth-1)
-	if baseHeight < 0 {
-		baseHeight = 0
-	}
-
-	return ht.backfill(ctx, headWithChain.EarliestInChain(), baseHeight)
+	return ht.backfill(ctx, headWithChain.EarliestInChain(), int64(latestFinalized))
 }
 
 func (ht *headTracker) LatestChain() *evmtypes.Head {
@@ -276,7 +271,13 @@ func (ht *headTracker) backfillLoop() {
 					break
 				}
 				{
-					err := ht.Backfill(ctx, head, uint(ht.config.EvmFinalityDepth()))
+					latestFinalized, err := ht.headSaver.LatestFinalizedBlockNumber(ctx, head.Number)
+					if err != nil {
+						ht.log.Warnw("Unexpected error while backfilling heads", "err", err)
+					} else if ctx.Err() != nil {
+						break
+					}
+					err = ht.Backfill(ctx, head, uint(latestFinalized))
 					if err != nil {
 						ht.log.Warnw("Unexpected error while backfilling heads", "err", err)
 					} else if ctx.Err() != nil {
@@ -288,16 +289,16 @@ func (ht *headTracker) backfillLoop() {
 	}
 }
 
-// backfill fetches all missing heads up until the base height
-func (ht *headTracker) backfill(ctx context.Context, head *evmtypes.Head, baseHeight int64) (err error) {
-	if head.Number <= baseHeight {
+// backfill fetches all missing heads up until the latest finalized
+func (ht *headTracker) backfill(ctx context.Context, head *evmtypes.Head, latestFinalized int64) (err error) {
+	if head.Number <= latestFinalized {
 		return nil
 	}
 	mark := time.Now()
 	fetched := 0
 	l := ht.log.With("blockNumber", head.Number,
-		"n", head.Number-baseHeight,
-		"fromBlockHeight", baseHeight,
+		"n", head.Number-latestFinalized,
+		"fromBlockHeight", latestFinalized,
 		"toBlockHeight", head.Number-1)
 	l.Debug("Starting backfill")
 	defer func() {
@@ -311,7 +312,7 @@ func (ht *headTracker) backfill(ctx context.Context, head *evmtypes.Head, baseHe
 			"err", err)
 	}()
 
-	for i := head.Number - 1; i >= baseHeight; i-- {
+	for i := head.Number - 1; i >= latestFinalized; i-- {
 		// NOTE: Sequential requests here mean it's a potential performance bottleneck, be aware!
 		existingHead := ht.headSaver.Chain(head.ParentHash)
 		if existingHead != nil {
@@ -359,3 +360,6 @@ func (*nullTracker) Backfill(ctx context.Context, headWithChain *evmtypes.Head, 
 	return nil
 }
 func (*nullTracker) LatestChain() *evmtypes.Head { return nil }
+func (*nullTracker) LatestFinalizedBlockNumber(ctx context.Context, currentHeadNumber int64) (int64, error) {
+	return 0, nil
+}

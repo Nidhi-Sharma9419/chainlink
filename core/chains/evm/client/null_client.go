@@ -67,6 +67,11 @@ func (nc *NullClient) HeadByHash(ctx context.Context, h common.Hash) (*evmtypes.
 	return nil, nil
 }
 
+func (nc *NullClient) HeightByBlockType(ctx context.Context, finalityType string) (int64, error) {
+	nc.lggr.Debug("HeightByBlockType")
+	return 0, nil
+}
+
 type nullSubscription struct {
 	lggr logger.Logger
 }
