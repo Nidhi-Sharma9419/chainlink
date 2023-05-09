@@ -111,8 +111,12 @@ generate: abigen codecgen mockery ## Execute all go:generate commands.
 	go generate -x ./...
 
 
-DIR_ARGS ?= -recurse=true
+DIR_ARGS ?=-recurse=true
 
+## Usage:
+##   - `make testscripts`: runs all txtar scripts in testdata/scripts, recursively by using the default DIR_ARGS flag.
+##   - `make testscripts DIR_ARGS="-dir=./testdata/scripts"`: runs just the txtar scripts in the testdata/scripts dir.
+##   - `make testscripts DIR_ARGS="-dir=./testdata/scripts/node -recurse=true"`: runs the txtar scripts in the testdata/scripts/node dir, recursively.
 .PHONY: testscripts
 testscripts: chainlink-test ## Install and run testscript against testdata/scripts/* files.
 	go install github.com/rogpeppe/go-internal/cmd/testscript@latest
