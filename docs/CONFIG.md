@@ -401,7 +401,8 @@ MaxBackups = 1 # Default
 ```toml
 Dir = '/my/log/directory' # Example
 ```
-Dir sets the log directory. By default, Chainlink nodes write log data to `$ROOT/log.jsonl`.
+Dir sets the log directory. By default, Chainlink nodes write log data to `$ROOT/log.jsonl`. If logging to disk is
+enabled (i.e. MaxSize > 0), then the node will attempt to create the directory with 0700 permissions during config validation.
 
 ### MaxSize
 ```toml

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -409,6 +410,25 @@ type LogFile struct {
 	MaxSize    *utils.FileSize
 	MaxAgeDays *int64
 	MaxBackups *int64
+}
+
+func (l *LogFile) ValidateConfig() (err error) {
+	if l.Dir == nil {
+		return
+	}
+
+	if l.MaxSize != nil && *l.MaxSize > 0 {
+		dirErr := utils.EnsureDirAndMaxPerms(*l.Dir, os.FileMode(0700))
+		if dirErr != nil {
+			err = multierr.Append(err, ErrInvalid{
+				Name:  "Dir",
+				Value: *l.Dir,
+				Msg:   fmt.Sprintf("failed to ensure dir has required permissions: %s", dirErr.Error()),
+			})
+		}
+	}
+
+	return
 }
 
 func (l *LogFile) setFrom(f *LogFile) {
