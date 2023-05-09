@@ -117,7 +117,7 @@ DIR_ARGS ?= -recurse=true
 testscripts: chainlink-test ## Install and run testscript against testdata/scripts/* files.
 	go install github.com/rogpeppe/go-internal/cmd/testscript@latest
 	go run ./tools/txtar/cmd/lstxtardirs $(DIR_ARGS) | xargs -I % \
-		sh -c 'PATH=$(CURDIR):$(PATH) testscript -e CL_DEV=true -e COMMIT_SHA=$(COMMIT_SHA) -e VERSION=$(VERSION) $(TS_FLAGS) %/*.txtar'
+		sh -c 'PATH=$(CURDIR):$(PATH) testscript -e COMMIT_SHA=$(COMMIT_SHA) -e VERSION=$(VERSION) $(TS_FLAGS) %/*.txtar'
 
 .PHONY: testscripts-update
 testscripts-update: ## Update testdata/scripts/* files via testscript.
