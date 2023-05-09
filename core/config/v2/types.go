@@ -417,6 +417,10 @@ func (l *LogFile) ValidateConfig() (err error) {
 		return
 	}
 
+	if *l.Dir == "" {
+		return
+	}
+
 	if l.MaxSize != nil && *l.MaxSize > 0 {
 		dirErr := utils.EnsureDirAndMaxPerms(*l.Dir, os.FileMode(0700))
 		if dirErr != nil {
