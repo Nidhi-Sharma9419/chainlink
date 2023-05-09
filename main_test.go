@@ -10,7 +10,7 @@ import (
 
 	"github.com/smartcontractkit/chainlink/v2/core"
 	"github.com/smartcontractkit/chainlink/v2/core/static"
-	"github.com/smartcontractkit/chainlink/v2/tools/lstxtardirs"
+	"github.com/smartcontractkit/chainlink/v2/tools/txtar"
 )
 
 //go:embed testdata/**
@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 func TestScripts(t *testing.T) {
 	t.Parallel()
 
-	visitor := lstxtardirs.NewVisitor("testdata/scripts", func(path string) error {
+	visitor := txtar.NewDirVisitor("testdata/scripts", txtar.Recurse, func(path string) error {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 			testscript.Run(t, testscript.Params{

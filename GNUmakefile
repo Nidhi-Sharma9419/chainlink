@@ -110,10 +110,13 @@ go-solidity-wrappers-functions: pnpmdep abigen ## Recompiles solidity contracts 
 generate: abigen codecgen mockery ## Execute all go:generate commands.
 	go generate -x ./...
 
+
+DIR_ARGS ?= -recurse=true
+
 .PHONY: testscripts
 testscripts: chainlink-test ## Install and run testscript against testdata/scripts/* files.
 	go install github.com/rogpeppe/go-internal/cmd/testscript@latest
-	go run ./tools/lstxtardirs/cmd | xargs -I % \
+	go run ./tools/txtar/cmd/lstxtardirs $(DIR_ARGS) | xargs -I % \
 		sh -c 'PATH=$(CURDIR):$(PATH) testscript -e CL_DEV=true -e COMMIT_SHA=$(COMMIT_SHA) -e VERSION=$(VERSION) $(TS_FLAGS) %/*.txtar'
 
 .PHONY: testscripts-update
