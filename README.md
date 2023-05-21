@@ -1,3 +1,5 @@
+Chainlink Functions Masterclass Document : https://docs.google.com/document/d/17Fn5mmaeIhDWLMQyysKq-iex1cCEfllD-3iFi5VhXPM/edit
+
 <br/>
 <p align="center">
 <a href="https://chain.link" target="_blank">
